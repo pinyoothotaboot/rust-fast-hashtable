@@ -16,7 +16,6 @@ where T : Clone + std::fmt::Debug
 
     #[inline]
     pub fn matched(&self,key : &Vec<u8>) -> bool {
-
         // Check length of hash key and store hash key.
         // When length of 2 keys has not match.Then return false
         if key.len() != self.key.len() {
