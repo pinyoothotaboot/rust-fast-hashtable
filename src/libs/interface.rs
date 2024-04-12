@@ -47,6 +47,19 @@ pub trait Dict<T> {
     fn delete(&mut self,key : String) -> Result<Option<T>,&'static str>;
 
     /**
+     * Function : update
+     * @sync
+     * About : Update the value to dictionary by key
+     * Param :
+     *      - key : The string of key
+     *      - value : The new value to update
+     * Return :
+     *      - Ok : True when update successed
+     *      - Err : The message error if update has failed
+     */
+    fn update(&mut self,key : String,value : T) -> Result<bool,&'static str>;
+
+    /**
      * Function : resize
      * @sync
      * About : Auto resizing of nodes ship 2x

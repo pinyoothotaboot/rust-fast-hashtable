@@ -218,6 +218,41 @@ where T : Clone + std::fmt::Debug
         }
     }
 
+    fn update(&mut self,key : String,value : T) -> Result<bool,&'static str> {
+        let bytes_key = key.as_bytes().to_vec();
+        match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
+            Ok(index) => {
+                match self.nodes.get_mut(index) {
+                    Some(mut first_node) => {
+                        let mut first = first_node.as_mut();
+
+                        while !first.is_none() {
+                            first = match first {
+                                Some(node) => {
+                                    // Matching key in node
+                                    // Then matched return message already updated
+                                    if node.matched(&bytes_key) {
+                                        node.set_value(value);
+                                        return Ok(true);
+                                    }
+
+                                    // Next node
+                                    //node.next
+                                    node.next.as_mut().map(|node| &mut *node)
+                                },
+                                None => None
+                            }
+                        }
+
+                        Err("Not found node matched key!.")
+                    },
+                    None => Err("Not found node") 
+                }
+            },
+            Err(e) => Err(e) 
+        }
+    }
+
     fn resize(&mut self) -> Result<bool,&'static str> {
         Ok(true)
     }

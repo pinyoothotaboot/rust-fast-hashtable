@@ -53,4 +53,8 @@ where T : Clone + std::fmt::Debug
         self.key.clone()
     }
 
+    pub fn set_value(&mut self,value : T) {
+        self.value = Some(value);
+    }
+
 }

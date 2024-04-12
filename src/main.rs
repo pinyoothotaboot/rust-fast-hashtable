@@ -29,14 +29,14 @@ fn main() {
     let size = dict.length();
     println!("SIZE : {}",size);
 
-    let do_del = dict.delete(key.clone());
-    println!("DEL : {:?}",do_del);
+    //let do_del = dict.delete(key.clone());
+    //println!("DEL : {:?}",do_del);
 
     let do_get = dict.get(key.clone());
     println!("GET : {:?}",do_get);
 
-    let do_del = dict.delete(key1.clone());
-    println!("DEL : {:?}",do_del);
+    //let do_del = dict.delete(key1.clone());
+    //println!("DEL : {:?}",do_del);
 
     let do_get = dict.get(key.clone());
     println!("GET : {:?}",do_get);
@@ -44,8 +44,11 @@ fn main() {
     let size = dict.length();
     println!("SIZE : {}",size);
 
-    let do_clear = dict.clear();
-    println!("CLEAR : {:?}",do_clear);
+    //let do_clear = dict.clear();
+    //println!("CLEAR : {:?}",do_clear);
+
+    let do_update = dict.update(key.clone(), "Hello World 555".to_string());
+    println!("UPDATE : {:?}",do_update);
 
     let do_get = dict.get(key.clone());
     println!("GET : {:?}",do_get);
