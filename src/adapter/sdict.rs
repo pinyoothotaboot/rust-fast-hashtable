@@ -71,6 +71,7 @@ where T : Clone + std::fmt::Debug
                                         return Ok(value);
                                     }
 
+                                    // Next node
                                     &node.next
                                 },
                                 None => &None
@@ -96,7 +97,7 @@ where T : Clone + std::fmt::Debug
             Ok(index) => {
                 match self.nodes.get_mut(index) {
                     Some(mut first_node) => {
-                        let mut first = first_node.clone();
+                        let mut first = first_node.as_mut();
                         // Loop first node is not None
                         while !first.is_none() {
                             first = match first {
@@ -107,9 +108,11 @@ where T : Clone + std::fmt::Debug
                                         return Err("The key already added.");
                                     }
 
-                                    node.next
+                                    // Next node
+                                    //node.next
+                                    node.next.as_mut().map(|node| &mut *node)
                                 },
-                                None => break
+                                None => None
                             }
                         }   
 
@@ -134,7 +137,66 @@ where T : Clone + std::fmt::Debug
     }
 
     fn delete(&mut self,key : String) -> Result<Option<T>,&'static str> {
-        Err("sss")
+        // Convert strings to ascii number in vector
+        let bytes_key = key.as_bytes().to_vec();
+
+        // Calculate hash function and return index of tables
+        match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
+            Ok(index) => {
+                // Get node by index
+                match self.nodes.get_mut(index) {
+                    Some(first_node) => {
+
+                        // Take first node by reference
+                        let mut first = first_node.as_mut();
+                        while !first.is_none() {
+                            first = match first {
+                                Some(node) => {
+
+                                    // Matching key in node
+                                    if node.matched(&bytes_key) {
+                                        let value = node.get_value();
+
+                                        // If take first node and no more in list
+                                        if node.next.is_none() {
+                                            *first_node = None;
+                                            self.decrease();
+                                            return Ok(value);
+                                        }
+
+                                        //mFirst = mFirst->next
+                                        node.next.as_mut().map(|node| &mut *node);
+                                        
+                                        // x = mFirst->next->next
+                                        let mut x = node.next.as_mut().map(|node| &mut *node);
+                                        // Drop x
+                                        match mem::replace(&mut x, None) {
+                                            Some(next) => {
+                                                // mFirst->next = x->next
+                                                node.next = Option::take(&mut next.next);
+                                                self.decrease();
+                                                return Ok(value);
+                                            },
+                                            None => {
+                                                return Err("Not found");
+                                            }
+                                        }
+                                    }
+
+                                    // mFirst -> mFirst->next
+                                    node.next.as_mut().map(|node| &mut *node)
+                                },
+                                None => break
+                            };
+                        };
+                        
+                        Err("The nodes of index is empty!.")
+                    },
+                    None => Err("Not found node")
+                }
+            },
+            Err(e) => Err(e)
+        }
     }
 
     fn resize(&mut self) -> Result<bool,&'static str> {

@@ -14,6 +14,10 @@ where T : Clone + std::fmt::Debug
         Node { value, key, next}
     }
 
+    pub fn set_next(&mut self,node : Option<Box<Node<T>>>) {
+        self.next = node;
+    }
+
     #[inline]
     pub fn matched(&self,key : &Vec<u8>) -> bool {
         // Check length of hash key and store hash key.
