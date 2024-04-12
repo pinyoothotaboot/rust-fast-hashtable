@@ -60,16 +60,6 @@ pub trait Dict<T> {
     fn update(&mut self,key : String,value : T) -> Result<bool,&'static str>;
 
     /**
-     * Function : resize
-     * @sync
-     * About : Auto resizing of nodes ship 2x
-     * Return :
-     *      Ok : True if resize successed
-     *      Err : The message error if resize has failed
-     */
-    fn resize(&mut self) -> Result<bool,&'static str>;
-
-    /**
      * Function : clear
      * @sync
      * About : Clear all object in nodes

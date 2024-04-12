@@ -47,6 +47,81 @@ where T : Clone + std::fmt::Debug
     fn get_table_size(&self) -> usize {
         self.table_size
     }
+
+    fn set_table_size(&mut self,size : usize) {
+        self.table_size = size;
+    }
+
+    fn set_nodes(&mut self,new_nodes : Vec<Option<Box<Node<T>>>>) {
+        self.nodes = new_nodes;
+    }
+
+    fn available_size(&self) -> usize {
+        let mut count : usize = 0;
+        for node in self.nodes.iter() {
+            if node.is_none() {
+                continue;
+            }
+            count+=1
+        }
+        count
+    }
+
+    fn resize(&mut self) -> Result<bool,&'static str> {
+        // Calculate current size div table size
+        let d = (self.available_size() / self.get_table_size()) as f32;
+        let mut new_size : usize = self.get_table_size();
+
+        // If key store >85% of table.Then new size = current size * 2
+        // If not key store <25% of table.Then new size = current size / 2
+        if d > 0.85 {
+            new_size*=2;
+        } else if d < 0.25 {
+            new_size /= 2;
+        } else {
+            return Err("Inrange key using");
+        }
+
+        // Update new table size
+        self.set_table_size(new_size);
+
+        // Initial new tables
+        let mut new_nodes : Vec<Option<Box<Node<T>>>> = Vec::new();
+        for _ in 0..self.get_table_size() {
+            new_nodes.push(None);
+        }
+
+        // Loop all current nodes
+        for node in self.nodes.iter() {
+            // Skip if node is none
+            if node.is_none() {
+                continue;
+            }
+
+            match node {
+                Some(obj) => {
+                    let key = obj.get_key();
+                    // Re-hash function
+                    match hash(&key, self.get_table_size(), self.get_seed()) {
+                        Ok(index) => {
+                            // Insert the node to new table
+                            new_nodes.insert(index, node.clone());
+                        },
+                        Err(e) => {
+                            println!("{:?}",e);
+                            continue;
+                        }
+                    }
+                },
+                None => continue
+            }
+        }
+
+        // Update new nodes
+        self.set_nodes(new_nodes);
+
+        Ok(true)
+    }
 }
 
 impl <T> Drop for SDict<T> {
@@ -128,7 +203,6 @@ where T : Clone + std::fmt::Debug
                                     }
 
                                     // Next node
-                                    //node.next
                                     node.next.as_mut().map(|node| &mut *node)
                                 },
                                 None => None
@@ -141,8 +215,12 @@ where T : Clone + std::fmt::Debug
                         let node : Node<T> = Node::new(bytes_key, Some(value), current);
                         *first_node = Some(Box::new(node));
                         self.increase();
-                        return Ok(true);
 
+                        // Auto resize table
+                        match self.resize() {
+                            Ok(resized) => Ok(resized),
+                            Err(e) => Ok(true)
+                        }
                     },
                     None => Err("Not found node")
                 }
@@ -180,7 +258,12 @@ where T : Clone + std::fmt::Debug
                                         if node.next.is_none() {
                                             *first_node = None;
                                             self.decrease();
-                                            return Ok(value);
+
+                                            // Auto resize table
+                                            match self.resize() {
+                                                Ok(_) => return Ok(value),
+                                                Err(_) => return Ok(value)
+                                            };
                                         }
 
                                         //mFirst = mFirst->next
@@ -194,7 +277,12 @@ where T : Clone + std::fmt::Debug
                                                 // mFirst->next = x->next
                                                 node.next = Option::take(&mut next.next);
                                                 self.decrease();
-                                                return Ok(value);
+
+                                                // Auto resize table
+                                                match self.resize() {
+                                                    Ok(_) => return Ok(value),
+                                                    Err(_) => return Ok(value)
+                                                };
                                             },
                                             None => {
                                                 return Err("Not found");
@@ -237,7 +325,6 @@ where T : Clone + std::fmt::Debug
                                     }
 
                                     // Next node
-                                    //node.next
                                     node.next.as_mut().map(|node| &mut *node)
                                 },
                                 None => None
@@ -251,10 +338,6 @@ where T : Clone + std::fmt::Debug
             },
             Err(e) => Err(e) 
         }
-    }
-
-    fn resize(&mut self) -> Result<bool,&'static str> {
-        Ok(true)
     }
 
     fn clear(&mut self) -> Result<bool,&'static str> {
