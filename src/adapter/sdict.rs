@@ -9,7 +9,8 @@ use crate::libs::constant::{TABLE_SIZE};
 pub struct SDict<T> {
     size : usize,
     seed : u64,
-    nodes : Vec<Option<Box<Node<T>>>>
+    nodes : Vec<Option<Box<Node<T>>>>,
+    table_size : usize
 }
 
 impl <T> SDict<T>
@@ -21,10 +22,13 @@ where T : Clone + std::fmt::Debug
             nodes.push(None);
         }
 
+        let seed = rand::thread_rng().next_u64();
+
         SDict { 
             size: 0, 
-            seed: rand::thread_rng().next_u64(), 
-            nodes: nodes
+            seed: seed, 
+            nodes: nodes,
+            table_size : TABLE_SIZE as usize
         }
     }
 
@@ -39,6 +43,10 @@ where T : Clone + std::fmt::Debug
     fn decrease(&mut self) {
         self.size-=1;
     }
+
+    fn get_table_size(&self) -> usize {
+        self.table_size
+    }
     
 }
 
@@ -47,7 +55,7 @@ where T : Clone + std::fmt::Debug
 {
     fn get(&self,key : String) -> Result<Option<T>,&'static str> {
         let bytes_key = key.as_bytes().to_vec();
-        match hash(&bytes_key, self.length(), self.get_seed()) {
+        match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get(index) {
                     Some(first_node) => {
@@ -62,7 +70,7 @@ where T : Clone + std::fmt::Debug
                                         let value = node.get_value();
                                         return Ok(value);
                                     }
-                                    
+
                                     &node.next
                                 },
                                 None => &None
@@ -84,11 +92,11 @@ where T : Clone + std::fmt::Debug
 
     fn set(&mut self,key : String , value : T) -> Result<bool,&'static str> {
         let bytes_key = key.as_bytes().to_vec();
-        match hash(&bytes_key, self.length(), self.get_seed()) {
+        match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
-                match self.nodes.get(index) {
+                match self.nodes.get_mut(index) {
                     Some(mut first_node) => {
-                        let mut first = first_node;
+                        let mut first = first_node.clone();
                         // Loop first node is not None
                         while !first.is_none() {
                             first = match first {
@@ -99,17 +107,17 @@ where T : Clone + std::fmt::Debug
                                         return Err("The key already added.");
                                     }
 
-                                    &node.next
+                                    node.next
                                 },
-                                None => &None
-                            };
+                                None => break
+                            }
                         }   
 
                         // If first node not found data or not matched key
                         // Then add new node
-                        let current : Option<Box<Node<T>>> = mem::replace(&mut first_node.clone(),None);
+                        let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
                         let node : Node<T> = Node::new(bytes_key, Some(value), current);
-                        first_node = &Some(Box::new(node));
+                        *first_node = Some(Box::new(node));
                         self.increase();
                         return Ok(true);
 
@@ -122,7 +130,7 @@ where T : Clone + std::fmt::Debug
     }
 
     fn length(&self) -> usize {
-        10
+        self.size
     }
 
     fn delete(&mut self,key : String) -> Result<Option<T>,&'static str> {
