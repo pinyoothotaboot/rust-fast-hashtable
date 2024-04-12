@@ -1,4 +1,4 @@
-
+use std::{fmt::Debug, mem};
 use rand::RngCore;
 use crate::libs::node::{Node};
 use crate::libs::interface::{Dict};
@@ -30,6 +30,14 @@ where T : Clone + std::fmt::Debug
 
     fn get_seed(&self) -> u64 {
         self.seed
+    }
+
+    fn increase(&mut self) {
+        self.size+=1;
+    }
+
+    fn decrease(&mut self) {
+        self.size-=1;
     }
     
 }
@@ -78,16 +86,8 @@ where T : Clone + std::fmt::Debug
         let bytes_key = key.as_bytes().to_vec();
         match hash(&bytes_key, self.length(), self.get_seed()) {
             Ok(index) => {
-                match self.nodes.get_mut(index) {
-                    Some(first_node) => {
-                        // If first node not found data
-                        // Then add new node
-                        if first_node.is_none() {
-                            let node : Node<T> = Node::new(bytes_key, Some(value), None);
-                            *first_node = Some(Box::new(node));
-                            return Ok(true);
-                        }
-
+                match self.nodes.get(index) {
+                    Some(mut first_node) => {
                         let mut first = first_node;
                         // Loop first node is not None
                         while !first.is_none() {
@@ -98,14 +98,20 @@ where T : Clone + std::fmt::Debug
                                     if node.matched(&bytes_key) {
                                         return Err("The key already added.");
                                     }
-                                    
+
                                     &node.next
                                 },
                                 None => &None
                             };
                         }   
 
-                        Err("fff")
+                        // If first node not found data or not matched key
+                        // Then add new node
+                        let current : Option<Box<Node<T>>> = mem::replace(&mut first_node.clone(),None);
+                        let node : Node<T> = Node::new(bytes_key, Some(value), current);
+                        first_node = &Some(Box::new(node));
+                        self.increase();
+                        return Ok(true);
 
                     },
                     None => Err("Not found node")
