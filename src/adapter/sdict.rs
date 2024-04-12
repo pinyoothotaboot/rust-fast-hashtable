@@ -47,7 +47,26 @@ where T : Clone + std::fmt::Debug
     fn get_table_size(&self) -> usize {
         self.table_size
     }
-    
+}
+
+impl <T> Drop for SDict<T> {
+    fn drop(&mut self) {
+        // Loop to drop all node in tables
+        for index in 0..self.nodes.len() {
+            match self.nodes.get_mut(index) {
+                Some(node) => {
+                    let mut cur_link = mem::replace(node, None);
+                    while let Some(mut boxed_node) = cur_link {
+                        cur_link = mem::replace(&mut boxed_node.next, None);
+                    }
+                },
+                None => {}
+            }
+        }
+
+        // Clear all in nodes
+        self.nodes.clear();
+    }
 }
 
 impl <T> Dict<T> for SDict<T>
@@ -202,7 +221,21 @@ where T : Clone + std::fmt::Debug
     fn resize(&mut self) -> Result<bool,&'static str> {
         Ok(true)
     }
+
     fn clear(&mut self) -> Result<bool,&'static str> {
+        for index in 0..self.nodes.len() {
+            match self.nodes.get_mut(index) {
+                Some(node) => {
+                    let mut cur_link = mem::replace(node, None);
+                    while let Some(mut boxed_node) = cur_link {
+                        cur_link = mem::replace(&mut boxed_node.next, None);
+                    }
+                },
+                None => {}
+            }
+        }
+
+        self.size = 0;
         Ok(true)
     }
 }
