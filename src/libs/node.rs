@@ -4,7 +4,7 @@
 pub struct Node<T> {
     value : Option<T>,
     key : Vec<u8>,
-    next : Option<Box<Node<T>>>
+    pub next : Option<Box<Node<T>>>
 }
 
 impl <T> Node<T>
@@ -15,7 +15,7 @@ where T : Clone + std::fmt::Debug
     }
 
     #[inline]
-    pub fn matched(&self,key : Vec<u8>) -> bool {
+    pub fn matched(&self,key : &Vec<u8>) -> bool {
 
         // Check length of hash key and store hash key.
         // When length of 2 keys has not match.Then return false

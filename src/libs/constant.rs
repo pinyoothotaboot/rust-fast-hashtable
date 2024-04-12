@@ -1,0 +1,3 @@
+
+pub const TABLE_SIZE : u32 = 1024;
+pub const MAGIC : u64 = 4292484099903637661;
