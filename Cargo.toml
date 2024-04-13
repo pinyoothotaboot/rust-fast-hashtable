@@ -22,3 +22,14 @@ rpath = false
 
 [dependencies]
 rand = "0.8.5"
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "sdict_benchmark"
+harness = false
+
+[[bench]]
+name = "hashmap_benchmark"
+harness = false
