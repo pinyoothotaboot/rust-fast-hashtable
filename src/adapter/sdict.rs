@@ -153,6 +153,7 @@ impl <T> Drop for SDict<T> {
 impl <T> Dict<T> for SDict<T>
 where T : Clone + std::fmt::Debug
 {
+    #[inline]
     fn get(&self,key : String) -> Result<Option<T>,&'static str> {
         let bytes_key = key.as_bytes().to_vec();
         match hash(&bytes_key.clone(), self.get_table_size(), self.get_seed()) {
@@ -191,6 +192,7 @@ where T : Clone + std::fmt::Debug
         }
     }
 
+    #[inline]
     fn set(&mut self,key : String , value : T) -> Result<bool,&'static str> {
         let _resized = self.resize();
 
@@ -242,6 +244,7 @@ where T : Clone + std::fmt::Debug
         self.size
     }
 
+    #[inline]
     fn delete(&mut self,key : String) -> Result<Option<T>,&'static str> {
         let _resized = self.resize();
         // Convert strings to ascii number in vector
@@ -316,12 +319,13 @@ where T : Clone + std::fmt::Debug
         }
     }
 
+    #[inline]
     fn update(&mut self,key : String,value : T) -> Result<bool,&'static str> {
         let bytes_key = key.as_bytes().to_vec();
         match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get_mut(index) {
-                    Some(mut first_node) => {
+                    Some(first_node) => {
                         let mut first = first_node.as_mut();
 
                         while !first.is_none() {
@@ -350,6 +354,7 @@ where T : Clone + std::fmt::Debug
         }
     }
 
+    #[inline]
     fn clear(&mut self) -> Result<bool,&'static str> {
         for index in 0..self.nodes.len() {
             match self.nodes.get_mut(index) {
