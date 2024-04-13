@@ -192,79 +192,50 @@ where T : Clone + std::fmt::Debug
     }
 
     fn set(&mut self,key : String , value : T) -> Result<bool,&'static str> {
+        let _resized = self.resize();
+
         let bytes_key = key.as_bytes().to_vec();
-        let result : Result<bool,&'static str> = match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
+        match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
-                let result = match self.nodes.get_mut(index) {
+                match self.nodes.get_mut(index) {
                     Some(mut first_node) => {
-                        //println!("FIRST NODE : {:?}",first_node);
-                        // Insert first if none
-                        if first_node.is_none() {
-                            // Node* mFirst = First->next
-                            let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
-                            // Node* tmp = new Node(element,mFirst)
-                            let node : Node<T> = Node::<T>::new(bytes_key,Some(value),current);
-                            // Node* First = tmp
-                            *first_node = Some(Box::new(node));
-
-                            self.increase();
-                            //return Ok(true);
-                        } else {
-                            let mut first = first_node.as_mut();
-                            // Loop first node is not None
-                            let mut flag : bool = true;
-                            while !first.is_none() {
-                                first = match first {
-                                    Some(node) => {
-                                        // Matching key in node
-                                        // Then matched return message already added
-                                        if node.matched(&bytes_key) {
-                                            flag = false;
-                                            break;
-                                        }
-
-                                        // Next node
-                                        node.next.as_mut().map(|node| &mut *node)
-                                    },
-                                    None => None
-                                }
-                            }; 
-
-                            // If first node not found data or not matched key
-                            // Then add new node
-                            if flag {
-                                let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
-                                let node : Node<T> = Node::new(bytes_key, Some(value), current);
-                                *first_node = Some(Box::new(node));
-                                self.increase();
-                            } else {
-                                return Err("The key already seted");
+                        let mut first = first_node.as_mut();
+                        // Loop first node is not None
+                        let mut flag : bool = true;
+                        while !first.is_none() {
+                            first = match first {
+                                Some(node) => {
+                                    // Matching key in node
+                                    // Then matched return message already added
+                                    if node.matched(&bytes_key) {
+                                        flag = false;
+                                        break;
+                                    }
+                                    // Next node
+                                    node.next.as_mut().map(|node| &mut *node)
+                                },
+                                None => None
                             }
-                        }
+                        }; 
 
-                        Ok(true)
+                        // If first node not found data or not matched key
+                        // Then add new node
+                        if flag {
+                            let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
+                            let node : Node<T> = Node::new(bytes_key, Some(value), current);
+                            *first_node = Some(Box::new(node));
+                            self.increase();
+                            return Ok(true);
+                        }
+                        
+                        return Err("The key already seted");
+                        
                     },
                     None => Err("Not found"),
-                };
-                result
-            },
-            Err(e) => Err(e)
-        };
-
-        /**
-         * TODO :: Failed update
-         *
-        match result {
-            Ok(inserted) => {
-                match self.resize() {
-                    Ok(resized) => Ok(resized),
-                    Err(_e) => Ok(inserted)
                 }
             },
             Err(e) => Err(e)
         }
-        */
-        result
     }
 
     fn length(&self) -> usize {
@@ -272,6 +243,7 @@ where T : Clone + std::fmt::Debug
     }
 
     fn delete(&mut self,key : String) -> Result<Option<T>,&'static str> {
+        let _resized = self.resize();
         // Convert strings to ascii number in vector
         let bytes_key = key.as_bytes().to_vec();
 
