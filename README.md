@@ -103,7 +103,7 @@ Update value to sdict by key
 
 ## License
 
-MIT
+[MIT](https://github.com/pinyoothotaboot/dictionary/blob/main/LICENSE)
 
 ## Author
 _Pinyoo Thotaboot_
