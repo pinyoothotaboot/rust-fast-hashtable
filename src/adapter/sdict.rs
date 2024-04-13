@@ -193,11 +193,11 @@ where T : Clone + std::fmt::Debug
 
     fn set(&mut self,key : String , value : T) -> Result<bool,&'static str> {
         let bytes_key = key.as_bytes().to_vec();
-        match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
+        let result : Result<bool,&'static str> = match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
-                match self.nodes.get_mut(index) {
+                let result = match self.nodes.get_mut(index) {
                     Some(mut first_node) => {
-
+                        //println!("FIRST NODE : {:?}",first_node);
                         // Insert first if none
                         if first_node.is_none() {
                             // Node* mFirst = First->next
@@ -208,47 +208,63 @@ where T : Clone + std::fmt::Debug
                             *first_node = Some(Box::new(node));
 
                             self.increase();
-                            return Ok(true);
-                        }
+                            //return Ok(true);
+                        } else {
+                            let mut first = first_node.as_mut();
+                            // Loop first node is not None
+                            let mut flag : bool = true;
+                            while !first.is_none() {
+                                first = match first {
+                                    Some(node) => {
+                                        // Matching key in node
+                                        // Then matched return message already added
+                                        if node.matched(&bytes_key) {
+                                            flag = false;
+                                            break;
+                                        }
 
-                        let mut first = first_node.as_mut();
-                        // Loop first node is not None
-                        let mut flag : bool = true;
-                        while !first.is_none() {
-                            first = match first {
-                                Some(node) => {
-                                    // Matching key in node
-                                    // Then matched return message already added
-                                    if node.matched(&bytes_key) {
-                                        flag = false;
-                                        break;
-                                    }
+                                        // Next node
+                                        node.next.as_mut().map(|node| &mut *node)
+                                    },
+                                    None => None
+                                }
+                            }; 
 
-                                    // Next node
-                                    node.next.as_mut().map(|node| &mut *node)
-                                },
-                                None => None
+                            // If first node not found data or not matched key
+                            // Then add new node
+                            if flag {
+                                let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
+                                let node : Node<T> = Node::new(bytes_key, Some(value), current);
+                                *first_node = Some(Box::new(node));
+                                self.increase();
+                            } else {
+                                return Err("The key already seted");
                             }
-                        };   
-
-                        // If first node not found data or not matched key
-                        // Then add new node
-                        if flag {
-                            let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
-                            let node : Node<T> = Node::new(bytes_key, Some(value), current);
-                            *first_node = Some(Box::new(node));
-                            self.increase();
-                            
-                            return Ok(true);
                         }
-                        
-                        Err("The key already seted")
+
+                        Ok(true)
                     },
-                    None => Err("Not found node")
+                    None => Err("Not found"),
+                };
+                result
+            },
+            Err(e) => Err(e)
+        };
+
+        /**
+         * TODO :: Failed update
+         *
+        match result {
+            Ok(inserted) => {
+                match self.resize() {
+                    Ok(resized) => Ok(resized),
+                    Err(_e) => Ok(inserted)
                 }
             },
             Err(e) => Err(e)
         }
+        */
+        result
     }
 
     fn length(&self) -> usize {
