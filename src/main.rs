@@ -9,22 +9,23 @@ fn main() {
     let value = String::from("World");
 
     let do_set = dict.set(key.clone(), value.clone());
-    println!("SET : {:?}",do_set);
+    println!("1.SET : {:?}",do_set);
+    dict.display();
 
-    let key1 = String::from("Hi");
+    let key1 = String::from("HowABOUTYou");
     let value1 = String::from("How are you");
 
     let do_set = dict.set(key1.clone(), value1);
-    println!("SET : {:?}",do_set);
-
+    println!("2.SET : {:?}",do_set);
+    dict.display();
     let do_get = dict.get(key.clone());
-    println!("GET : {:?}",do_get);
+    println!("1.GET : {:?}",do_get);
 
     let do_get = dict.get(key1.clone());
-    println!("GET : {:?}",do_get);
+    println!("2.GET : {:?}",do_get);
 
     let do_get = dict.get(key.clone());
-    println!("GET : {:?}",do_get);
+    println!("3.GET : {:?}",do_get);
 
     let size = dict.length();
     println!("SIZE : {}",size);
@@ -33,13 +34,13 @@ fn main() {
     //println!("DEL : {:?}",do_del);
 
     let do_get = dict.get(key.clone());
-    println!("GET : {:?}",do_get);
+    println!("4.GET : {:?}",do_get);
 
     //let do_del = dict.delete(key1.clone());
     //println!("DEL : {:?}",do_del);
 
     let do_get = dict.get(key.clone());
-    println!("GET : {:?}",do_get);
+    println!("5.GET : {:?}",do_get);
 
     let size = dict.length();
     println!("SIZE : {}",size);
@@ -51,7 +52,7 @@ fn main() {
     println!("UPDATE : {:?}",do_update);
 
     let do_get = dict.get(key.clone());
-    println!("GET : {:?}",do_get);
+    println!("6.GET : {:?}",do_get);
 
     let size = dict.length();
     println!("SIZE : {}",size);
