@@ -67,6 +67,12 @@ where T : Clone + std::fmt::Debug
         count
     }
 
+    pub fn display(&self) {
+        for node in self.nodes.iter() {
+            println!("NODE : {:?}\n",node);
+        }
+    }
+
     fn resize(&mut self) -> Result<bool,&'static str> {
         // Calculate current size div table size
         let d = (self.available_size() / self.get_table_size()) as f32;
@@ -149,7 +155,7 @@ where T : Clone + std::fmt::Debug
 {
     fn get(&self,key : String) -> Result<Option<T>,&'static str> {
         let bytes_key = key.as_bytes().to_vec();
-        match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
+        match hash(&bytes_key.clone(), self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get(index) {
                     Some(first_node) => {
@@ -162,14 +168,14 @@ where T : Clone + std::fmt::Debug
                                     // Then matched return value
                                     if node.matched(&bytes_key) {
                                         let value = node.get_value();
-                                        return Ok(value);
+                                        return Ok(value)
+                                    } else {
+                                        // Next node
+                                        &node.next
                                     }
-
-                                    // Next node
-                                    &node.next
                                 },
                                 None => &None
-                            };
+                            }
                         }
 
                         Err("The first node is empty!.")
@@ -191,15 +197,31 @@ where T : Clone + std::fmt::Debug
             Ok(index) => {
                 match self.nodes.get_mut(index) {
                     Some(mut first_node) => {
+
+                        // Insert first if none
+                        if first_node.is_none() {
+                            // Node* mFirst = First->next
+                            let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
+                            // Node* tmp = new Node(element,mFirst)
+                            let node : Node<T> = Node::<T>::new(bytes_key,Some(value),current);
+                            // Node* First = tmp
+                            *first_node = Some(Box::new(node));
+
+                            self.increase();
+                            return Ok(true);
+                        }
+
                         let mut first = first_node.as_mut();
                         // Loop first node is not None
+                        let mut flag : bool = true;
                         while !first.is_none() {
                             first = match first {
                                 Some(node) => {
                                     // Matching key in node
                                     // Then matched return message already added
                                     if node.matched(&bytes_key) {
-                                        return Err("The key already added.");
+                                        flag = false;
+                                        break;
                                     }
 
                                     // Next node
@@ -207,20 +229,20 @@ where T : Clone + std::fmt::Debug
                                 },
                                 None => None
                             }
-                        }   
+                        };   
 
                         // If first node not found data or not matched key
                         // Then add new node
-                        let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
-                        let node : Node<T> = Node::new(bytes_key, Some(value), current);
-                        *first_node = Some(Box::new(node));
-                        self.increase();
-
-                        // Auto resize table
-                        match self.resize() {
-                            Ok(resized) => Ok(resized),
-                            Err(e) => Ok(true)
+                        if flag {
+                            let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
+                            let node : Node<T> = Node::new(bytes_key, Some(value), current);
+                            *first_node = Some(Box::new(node));
+                            self.increase();
+                            
+                            return Ok(true);
                         }
+                        
+                        Err("The key already seted")
                     },
                     None => Err("Not found node")
                 }
