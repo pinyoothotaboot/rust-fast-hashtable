@@ -58,7 +58,7 @@ fn array_get_pointer_level_1_bench_matched(c : &mut Criterion) {
     );
 
     fn get(index : usize,entries : &mut Vec<Option<Box<Node<String>>>>) -> Option<String> {
-        
+
         match &entries[index] {
             Some(node) => {
                 None
