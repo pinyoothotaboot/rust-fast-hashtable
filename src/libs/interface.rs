@@ -11,7 +11,7 @@ pub trait Dict<T> {
      *      - Ok : True when add success
      *      - Err : The message error when has problem to set in dictionary
      */
-    fn set(&mut self,key : String , value : T) -> Result<bool,&'static str>;
+    fn set(&mut self,key : &Vec<u8> , value : T) -> Result<bool,&'static str>;
 
     /**
      * Function : get
@@ -23,7 +23,7 @@ pub trait Dict<T> {
      *      - Ok : The value from dictionary
      *      - Err : The message error when has problem to get from dictionary
      */
-    fn get(&self,key : String) -> Result<Option<T>,&'static str>;
+    fn get(&self,key : &Vec<u8>) -> Result<Option<T>,&'static str>;
 
     /**
      * Function : length
@@ -44,7 +44,7 @@ pub trait Dict<T> {
      *      - Ok : Value from object after deleted
      *      - Err : The message error if has problem delete
      */
-    fn delete(&mut self,key : String) -> Result<Option<T>,&'static str>;
+    fn delete(&mut self,key : &Vec<u8>) -> Result<Option<T>,&'static str>;
 
     /**
      * Function : update
@@ -57,7 +57,7 @@ pub trait Dict<T> {
      *      - Ok : True when update successed
      *      - Err : The message error if update has failed
      */
-    fn update(&mut self,key : String,value : T) -> Result<bool,&'static str>;
+    fn update(&mut self,key : &Vec<u8>,value : T) -> Result<bool,&'static str>;
 
     /**
      * Function : clear
