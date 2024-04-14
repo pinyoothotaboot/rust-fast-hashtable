@@ -41,3 +41,7 @@ harness = false
 [[bench]]
 name = "vec_benchmark"
 harness = false
+
+[[bench]]
+name = "hash_benchmark"
+harness = false
