@@ -16,13 +16,13 @@ fn bench_set_hashmap(c : &mut Criterion) {
         (key,value)
     );
 
-    fn set(dict : &mut HashMap<String,String>,key: String ,value: String) {
-        let result = dict.insert(key, value);
+    fn set(dict : &mut HashMap<String,String>,key: &String ,value: &String) {
+        let result = dict.insert(key.to_string(), value.to_string());
     }
 
     c.bench_function(
         "Set value to HashMap",
-        |b| b.iter(|| set(&mut dict,element.0.clone(), element.1.clone()))
+        |b| b.iter(|| set(&mut dict,&element.0, &element.1))
     );
 }
 
@@ -36,13 +36,13 @@ fn bench_get_hashmap(c : &mut Criterion) {
         key
     );
 
-    fn get(dict : &mut HashMap<String,String>,key: String) {
-        let result = dict.get(&key);
+    fn get(dict : &mut HashMap<String,String>,key: &String) {
+        let result = dict.get(key);
     }
 
     c.bench_function(
         "Get value from HashMap by key",
-        |b| b.iter(|| get(&mut dict,element.clone()))
+        |b| b.iter(|| get(&mut dict,&element))
     );
 }
 
@@ -58,15 +58,15 @@ fn bench_update_hashmap(c : &mut Criterion) {
         (key,value)
     );
 
-    fn update(dict : &mut HashMap<String,String>,key: String,new_value : String) {
-        if let Some(x) = dict.get_mut(&key) {
-            *x = new_value;
+    fn update(dict : &mut HashMap<String,String>,key: &String,new_value : &String) {
+        if let Some(x) = dict.get_mut(key) {
+            *x = new_value.to_string();
         }
     }
 
     c.bench_function(
         "Update value to HashMap by key",
-        |b| b.iter(|| update(&mut dict,element.0.clone(),element.1.clone()))
+        |b| b.iter(|| update(&mut dict,&element.0,&element.1))
     );
 }
 
