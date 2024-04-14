@@ -154,12 +154,13 @@ impl <T> Dict<T> for SDict<T>
 where T : Clone + std::fmt::Debug
 {
     #[inline]
-    fn get(&self,key : String) -> Result<Option<T>,&'static str> {
-        let bytes_key = key.as_bytes().to_vec();
-        match hash(&bytes_key.clone(), self.get_table_size(), self.get_seed()) {
+    fn get(&self,key : &Vec<u8>) -> Result<Option<T>,&'static str> {
+        //let bytes_key = key.as_bytes().to_vec();
+        match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get(index) {
                     Some(first_node) => {
+                        
                         let mut first = first_node;
                         // Loop first node is not None
                         while !first.is_none() {
@@ -167,7 +168,7 @@ where T : Clone + std::fmt::Debug
                                 Some(node) => {
                                     // Matching key in node
                                     // Then matched return value
-                                    if node.matched(&bytes_key) {
+                                    if node.matched(key) {
                                         let value = node.get_value();
                                         return Ok(value)
                                     } else {
@@ -178,6 +179,7 @@ where T : Clone + std::fmt::Debug
                                 None => &None
                             }
                         }
+                        
 
                         Err("The first node is empty!.")
                     },
@@ -193,11 +195,11 @@ where T : Clone + std::fmt::Debug
     }
 
     #[inline]
-    fn set(&mut self,key : String , value : T) -> Result<bool,&'static str> {
-        let _resized = self.resize();
+    fn set(&mut self,key : &Vec<u8> , value : T) -> Result<bool,&'static str> {
+        //let _resized = self.resize();
 
-        let bytes_key = key.as_bytes().to_vec();
-        match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
+        //let bytes_key = key.as_bytes().to_vec();
+        match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get_mut(index) {
                     Some(mut first_node) => {
@@ -209,7 +211,7 @@ where T : Clone + std::fmt::Debug
                                 Some(node) => {
                                     // Matching key in node
                                     // Then matched return message already added
-                                    if node.matched(&bytes_key) {
+                                    if node.matched(key) {
                                         flag = false;
                                         break;
                                     }
@@ -224,12 +226,12 @@ where T : Clone + std::fmt::Debug
                         // Then add new node
                         if flag {
                             let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
-                            let node : Node<T> = Node::new(bytes_key, Some(value), current);
+                            let node : Node<T> = Node::new(key.clone(), Some(value), current);
                             *first_node = Some(Box::new(node));
                             self.increase();
                             return Ok(true);
                         }
-                        
+
                         return Err("The key already seted");
                         
                     },
@@ -245,13 +247,13 @@ where T : Clone + std::fmt::Debug
     }
 
     #[inline]
-    fn delete(&mut self,key : String) -> Result<Option<T>,&'static str> {
-        let _resized = self.resize();
+    fn delete(&mut self,key : &Vec<u8>) -> Result<Option<T>,&'static str> {
+        //let _resized = self.resize();
         // Convert strings to ascii number in vector
-        let bytes_key = key.as_bytes().to_vec();
+        //let bytes_key = key.as_bytes().to_vec();
 
         // Calculate hash function and return index of tables
-        match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
+        match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 // Get node by index
                 match self.nodes.get_mut(index) {
@@ -264,7 +266,7 @@ where T : Clone + std::fmt::Debug
                                 Some(node) => {
 
                                     // Matching key in node
-                                    if node.matched(&bytes_key) {
+                                    if node.matched(key) {
                                         let value = node.get_value();
 
                                         // If take first node and no more in list
@@ -320,12 +322,13 @@ where T : Clone + std::fmt::Debug
     }
 
     #[inline]
-    fn update(&mut self,key : String,value : T) -> Result<bool,&'static str> {
-        let bytes_key = key.as_bytes().to_vec();
-        match hash(&bytes_key, self.get_table_size(), self.get_seed()) {
+    fn update(&mut self,key : &Vec<u8>,value : T) -> Result<bool,&'static str> {
+        //let bytes_key = key.as_bytes().to_vec();
+        match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get_mut(index) {
                     Some(first_node) => {
+
                         let mut first = first_node.as_mut();
 
                         while !first.is_none() {
@@ -333,7 +336,7 @@ where T : Clone + std::fmt::Debug
                                 Some(node) => {
                                     // Matching key in node
                                     // Then matched return message already updated
-                                    if node.matched(&bytes_key) {
+                                    if node.matched(key) {
                                         node.set_value(value);
                                         return Ok(true);
                                     }
