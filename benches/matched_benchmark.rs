@@ -76,6 +76,12 @@ fn in_matched(keys1 : Vec<u8>,keys2 : Vec<u8>) -> bool {
     return true;
 }
 
+#[inline]
+fn builtin_matched(keys1 : Vec<u8>,keys2 : Vec<u8>)  -> bool {
+    let matching = keys1.iter().zip(&keys2).filter(|&(keys1,keys2)| keys1 == keys2).count();
+    matching == keys1.len()
+}
+
 
 fn bench_matched(c : &mut Criterion) {
     let mut keys1 = String::from("A");
@@ -135,9 +141,39 @@ fn inuse_bench_matched(c : &mut Criterion) {
     );
 }
 
+fn builtin_bench_matched(c : &mut Criterion) {
+    let mut keys1 = String::from("A");
+    let mut keys2 = String::from("A");
+
+    keys1.extend(vec!['H';1000].iter());
+    keys1.extend(vec!['K';1000].iter());
+    keys1.extend(vec!['D';1000].iter());
+    keys1.extend(vec!['O';1000].iter());
+    keys1.extend(vec!['R';1000].iter());
+
+    keys2.extend(vec!['H';1000].iter());
+    keys2.extend(vec!['K';1000].iter());
+    keys2.extend(vec!['D';1000].iter());
+    keys2.extend(vec!['O';1000].iter());
+    keys2.extend(vec!['R';1000].iter());
+
+    keys1.push('B');
+    keys2.push('B');
+
+    let element = black_box(
+        (keys1.as_bytes().to_vec(),keys2.as_bytes().to_vec())
+    );
+
+    c.bench_function(
+        "Compare 2 Strings with builtin lib",
+        |b| b.iter(|| builtin_matched(element.0.clone(),element.1.clone()))
+    );
+}
+
 criterion_group!(
     benches,
     bench_matched,
-    inuse_bench_matched
+    inuse_bench_matched,
+    builtin_bench_matched
 );
 criterion_main!(benches);
