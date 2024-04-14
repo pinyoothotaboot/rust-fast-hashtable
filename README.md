@@ -76,6 +76,12 @@ Run benchmark
 cargo bench
 ```
 
+Run benchmark specify
+
+```sh
+cargo bench --bench vec_benchmark
+```
+
 Report benchmark
 
 ```sh
