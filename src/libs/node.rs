@@ -7,6 +7,13 @@ pub struct Node<T> {
     pub next : Option<Box<Node<T>>>
 }
 
+#[derive(Clone,PartialEq,Debug)]
+pub struct INode<T> {
+    value : Option<T>,
+    key : usize,
+    pub next : Option<Box<INode<T>>>
+}
+
 impl <T> Node<T>
 where T : Clone + std::fmt::Debug
 {
@@ -58,7 +65,6 @@ where T : Clone + std::fmt::Debug
         true
     }
 
-
     pub fn get_value(&self) -> Option<T> {
         self.value.clone()
     }
@@ -72,6 +78,36 @@ where T : Clone + std::fmt::Debug
     }
 
     pub fn set_key(&mut self,new_key : Vec<u8>) {
+        self.key = new_key;
+    }
+
+}
+
+impl <T> INode<T>
+where T : Clone + std::fmt::Debug
+{
+    pub fn new(key : usize , value : Option<T>,next : Option<Box<INode<T>>>) -> Self {
+        INode { value, key, next}
+    }
+
+    #[inline]
+    pub fn matched(&self,key : &usize) -> bool {
+        key - self.key == 0
+    }
+
+    pub fn get_value(&self) -> Option<T> {
+        self.value.clone()
+    }
+
+    pub fn get_key(&self) -> usize {
+        self.key.clone()
+    }
+
+    pub fn set_value(&mut self,value : T) {
+        self.value = Some(value);
+    }
+
+    pub fn set_key(&mut self,new_key : usize) {
         self.key = new_key;
     }
 

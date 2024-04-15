@@ -28,3 +28,9 @@ pub fn hash(key : &Vec<u8>,table_size : usize,seed : u64) -> Result<usize,&'stat
     let index : usize = mixed as usize % table_size;
     Ok(index)
 }
+
+pub fn ihash(key : &usize,table_size : &usize,seed : &u64) -> usize {
+    let mixed : u32 = mix_4_byte(*key as u32, *seed);
+    let index : usize = mixed as usize % table_size;
+    index
+}
