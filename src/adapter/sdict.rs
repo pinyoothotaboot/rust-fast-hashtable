@@ -200,7 +200,6 @@ where T : Clone + std::fmt::Debug
     #[inline]
     fn set(&mut self,key : &Vec<u8> , value : T) -> Result<bool,&'static str> {
         let _resized = self.resize();
-
         match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get_mut(index) {
@@ -250,7 +249,6 @@ where T : Clone + std::fmt::Debug
 
     #[inline]
     fn delete(&mut self,key : &Vec<u8>) -> Result<Option<T>,&'static str> {
-        let _resized = self.resize();
         // Calculate hash function and return index of tables
         match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
