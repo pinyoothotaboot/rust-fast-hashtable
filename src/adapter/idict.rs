@@ -208,7 +208,7 @@ where T : Clone + std::fmt::Debug
     }
 
     #[inline]
-    fn delete(&mut self,key : &usize) -> Result<Option<T>,&'static str> {
+    pub fn delete(&mut self,key : &usize) -> Result<Option<T>,&'static str> {
         let index = ihash(key, &self.get_table_size(), &self.get_seed());
         // Get node by index
         match self.nodes.get_mut(index) {
@@ -274,7 +274,7 @@ where T : Clone + std::fmt::Debug
     }
 
     #[inline]
-    fn update(&mut self,key : &usize,value : T) -> Result<bool,&'static str> {
+    pub fn update(&mut self,key : &usize,value : T) -> Result<bool,&'static str> {
         let index = ihash(key, &self.get_table_size(), &self.get_seed());
         match self.nodes.get_mut(index) {
             Some(first_node) => {
@@ -305,7 +305,7 @@ where T : Clone + std::fmt::Debug
     }
 
     #[inline]
-    fn clear(&mut self) -> Result<bool,&'static str> {
+    pub fn clear(&mut self) -> Result<bool,&'static str> {
         for index in 0..self.nodes.len() {
             match self.nodes.get_mut(index) {
                 Some(node) => {
