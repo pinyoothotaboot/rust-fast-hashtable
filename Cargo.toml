@@ -39,6 +39,10 @@ name = "sset_benchmark"
 harness = false
 
 [[bench]]
+name = "iset_benchmark"
+harness = false
+
+[[bench]]
 name = "hashmap_benchmark"
 harness = false
 
