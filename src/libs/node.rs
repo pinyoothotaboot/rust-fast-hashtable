@@ -71,4 +71,8 @@ where T : Clone + std::fmt::Debug
         self.value = Some(value);
     }
 
+    pub fn set_key(&mut self,new_key : Vec<u8>) {
+        self.key = new_key;
+    }
+
 }
