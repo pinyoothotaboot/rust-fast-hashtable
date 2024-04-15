@@ -115,7 +115,6 @@ Found 8 outliers among 100 measurements (8.00%)
 
 ## Incomming
 
-- ISet  : The hashset support key is integer
 - Optimized all data structor
 
 ## License
