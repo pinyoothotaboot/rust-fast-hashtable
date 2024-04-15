@@ -103,7 +103,6 @@ Update value to sdict by key
 ## Incomming
 
 - IDict : The dictionary support key is integer
-- SSet  : The hashset support key is string
 - ISet  : The hashset support key is integer
 - Optimized all data structor
 
