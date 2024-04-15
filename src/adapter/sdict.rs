@@ -75,7 +75,7 @@ where T : Clone + std::fmt::Debug
 
     fn resize(&mut self) -> Result<bool,&'static str> {
         // Calculate current size div table size
-        let d = (self.available_size() / self.get_table_size()) as f32;
+        let d = (self.size / self.get_table_size()) as f32;
         let mut new_size : usize = self.get_table_size();
 
         // If key store >85% of table.Then new size = current size * 2
@@ -86,6 +86,11 @@ where T : Clone + std::fmt::Debug
             new_size /= 2;
         } else {
             return Err("Inrange key using");
+        }
+
+        // The table size available default at 1024
+        if TABLE_SIZE > new_size as u32 {
+            return Err("The table size has lessthan deafult");
         }
 
         // Update new table size
@@ -155,12 +160,10 @@ where T : Clone + std::fmt::Debug
 {
     #[inline]
     fn get(&self,key : &Vec<u8>) -> Result<Option<T>,&'static str> {
-        //let bytes_key = key.as_bytes().to_vec();
         match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get(index) {
                     Some(first_node) => {
-                        
                         let mut first = first_node;
                         // Loop first node is not None
                         while !first.is_none() {
@@ -196,9 +199,8 @@ where T : Clone + std::fmt::Debug
 
     #[inline]
     fn set(&mut self,key : &Vec<u8> , value : T) -> Result<bool,&'static str> {
-        //let _resized = self.resize();
+        let _resized = self.resize();
 
-        //let bytes_key = key.as_bytes().to_vec();
         match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get_mut(index) {
@@ -248,10 +250,7 @@ where T : Clone + std::fmt::Debug
 
     #[inline]
     fn delete(&mut self,key : &Vec<u8>) -> Result<Option<T>,&'static str> {
-        //let _resized = self.resize();
-        // Convert strings to ascii number in vector
-        //let bytes_key = key.as_bytes().to_vec();
-
+        let _resized = self.resize();
         // Calculate hash function and return index of tables
         match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
@@ -323,7 +322,6 @@ where T : Clone + std::fmt::Debug
 
     #[inline]
     fn update(&mut self,key : &Vec<u8>,value : T) -> Result<bool,&'static str> {
-        //let bytes_key = key.as_bytes().to_vec();
         match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get_mut(index) {
