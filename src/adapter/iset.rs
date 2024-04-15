@@ -133,7 +133,7 @@ impl <T> Drop for ISet<T> {
 impl <T> ISet<T>
 where T : Clone + std::fmt::Debug
 {
-    fn add(&mut self,key : &usize) -> Result<bool,&'static str> {
+    pub fn add(&mut self,key : &usize) -> Result<bool,&'static str> {
         let _resized = self.resize();
         let index = ihash(key, &self.get_table_size(), &self.get_seed());
         match self.nodes.get_mut(index) {
@@ -175,7 +175,7 @@ where T : Clone + std::fmt::Debug
         }
     }
 
-    fn get(&self,key : &usize) -> Result<Option<usize>,&'static str> {
+    pub fn get(&self,key : &usize) -> Result<Option<usize>,&'static str> {
         let index = ihash(key, &self.get_table_size(), &self.get_seed());
         match self.nodes.get(index) {
             Some(first_node) => {
@@ -204,7 +204,7 @@ where T : Clone + std::fmt::Debug
         }
     }
 
-    fn has(&self,key : &usize) -> bool {
+    pub fn has(&self,key : &usize) -> bool {
         let index = ihash(key, &self.get_table_size(), &self.get_seed());
         match self.nodes.get(index) {
             Some(first_node) => {
@@ -233,13 +233,13 @@ where T : Clone + std::fmt::Debug
         }
     }
 
-    fn update(&mut self,key : &usize,new_key : &usize) -> Result<bool,&'static str> {
+    pub fn update(&mut self,key : &usize,new_key : &usize) -> Result<bool,&'static str> {
         let _deleted = self.delete(key);
         let add = self.add(new_key);
         add
     }
 
-    fn delete(&mut self,key : &usize) -> Result<Option<usize>,&'static str> {
+    pub fn delete(&mut self,key : &usize) -> Result<Option<usize>,&'static str> {
         let index = ihash(key, &self.get_table_size(), &self.get_seed());
         // Calculate hash function and return index of tables
         // Get node by index
@@ -305,11 +305,11 @@ where T : Clone + std::fmt::Debug
         }
     }
 
-    fn length(&self) -> usize {
+    pub fn length(&self) -> usize {
         self.size
     }
 
-    fn clear(&mut self) -> Result<bool,&'static str> {
+    pub fn clear(&mut self) -> Result<bool,&'static str> {
         for index in 0..self.nodes.len() {
             match self.nodes.get_mut(index) {
                 Some(node) => {
