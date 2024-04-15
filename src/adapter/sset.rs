@@ -1,19 +1,19 @@
 use std::{fmt::Debug, mem};
 use rand::RngCore;
 use crate::libs::node::{Node};
-use crate::libs::interface::{Dict};
+use crate::libs::interface::{Set};
 use crate::libs::hash::{hash};
 use crate::libs::constant::{TABLE_SIZE};
 
 #[derive(Clone,PartialEq,Debug)]
-pub struct SDict<T> {
+pub struct SSet<T> {
     size : usize,
     seed : u64,
     nodes : Vec<Option<Box<Node<T>>>>,
     table_size : usize
 }
 
-impl <T> SDict<T>
+impl <T> SSet<T>
 where T : Clone + std::fmt::Debug
 {
     pub fn new() -> Self {
@@ -24,7 +24,7 @@ where T : Clone + std::fmt::Debug
 
         let seed = rand::thread_rng().next_u64();
 
-        SDict { 
+        SSet { 
             size: 0, 
             seed: seed, 
             nodes: nodes,
@@ -54,23 +54,6 @@ where T : Clone + std::fmt::Debug
 
     fn set_nodes(&mut self,new_nodes : Vec<Option<Box<Node<T>>>>) {
         self.nodes = new_nodes;
-    }
-
-    fn available_size(&self) -> usize {
-        let mut count : usize = 0;
-        for node in self.nodes.iter() {
-            if node.is_none() {
-                continue;
-            }
-            count+=1
-        }
-        count
-    }
-
-    pub fn display(&self) {
-        for node in self.nodes.iter() {
-            println!("NODE : {:?}\n",node);
-        }
     }
 
     fn resize(&mut self) -> Result<bool,&'static str> {
@@ -135,7 +118,7 @@ where T : Clone + std::fmt::Debug
     }
 }
 
-impl <T> Drop for SDict<T> {
+impl <T> Drop for SSet<T> {
     fn drop(&mut self) {
         // Loop to drop all node in tables
         for index in 0..self.nodes.len() {
@@ -155,55 +138,16 @@ impl <T> Drop for SDict<T> {
     }
 }
 
-impl <T> Dict<T> for SDict<T>
+impl <T> Set<T> for SSet<T>
 where T : Clone + std::fmt::Debug
 {
-    #[inline]
-    fn get(&self,key : &Vec<u8>) -> Result<Option<T>,&'static str> {
-        match hash(key, self.get_table_size(), self.get_seed()) {
-            Ok(index) => {
-                match self.nodes.get(index) {
-                    Some(first_node) => {
-                        let mut first = first_node;
-                        // Loop first node is not None
-                        while !first.is_none() {
-                            first = match first {
-                                Some(node) => {
-                                    // Matching key in node
-                                    // Then matched return value
-                                    if node.matched(key) {
-                                        let value = node.get_value();
-                                        return Ok(value)
-                                    } else {
-                                        // Next node
-                                        &node.next
-                                    }
-                                },
-                                None => &None
-                            }
-                        }
-                        
-
-                        Err("The first node is empty!.")
-                    },
-                    None => {
-                        return Err("Not found node");
-                    }
-                }
-            },
-            Err(e) =>{
-                return Err(e);
-            }
-        }
-    }
-
-    #[inline]
-    fn set(&mut self,key : &Vec<u8> , value : T) -> Result<bool,&'static str> {
+    fn add(&mut self,key : &Vec<u8>) -> Result<bool,&'static str> {
         let _resized = self.resize();
         match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
                 match self.nodes.get_mut(index) {
                     Some(mut first_node) => {
+
                         let mut first = first_node.as_mut();
                         // Loop first node is not None
                         let mut flag : bool = true;
@@ -227,7 +171,7 @@ where T : Clone + std::fmt::Debug
                         // Then add new node
                         if flag {
                             let current : Option<Box<Node<T>>> = mem::replace(&mut first_node,None);
-                            let node : Node<T> = Node::new(key.clone(), Some(value), current);
+                            let node : Node<T> = Node::new(key.clone(), None, current);
                             *first_node = Some(Box::new(node));
                             self.increase();
                             return Ok(true);
@@ -243,12 +187,83 @@ where T : Clone + std::fmt::Debug
         }
     }
 
-    fn length(&self) -> usize {
-        self.size
+    fn get(&self,key : &Vec<u8>) -> Result<Option<Vec<u8>>,&'static str> {
+        match hash(key, self.get_table_size(), self.get_seed()) {
+            Ok(index) => {
+                match self.nodes.get(index) {
+                    Some(first_node) => {
+                        let mut first = first_node;
+                        // Loop first node is not None
+                        while !first.is_none() {
+                            first = match first {
+                                Some(node) => {
+                                    // Matching key in node
+                                    // Then matched return value
+                                    if node.matched(key) {
+                                        return Ok(Some(node.get_key()));
+                                    } else {
+                                        // Next node
+                                        &node.next
+                                    }
+                                },
+                                None => &None
+                            }
+                        }
+                        Err("The first node is empty!.")
+                    },
+                    None => {
+                        return Err("Not found node");
+                    }
+                }
+            },
+            Err(e) =>{
+                return Err(e);
+            }
+        }
     }
 
-    #[inline]
-    fn delete(&mut self,key : &Vec<u8>) -> Result<Option<T>,&'static str> {
+    fn has(&self,key : &Vec<u8>) -> bool {
+        match hash(key, self.get_table_size(), self.get_seed()) {
+            Ok(index) => {
+                match self.nodes.get(index) {
+                    Some(first_node) => {
+                        let mut first = first_node;
+                        // Loop first node is not None
+                        while !first.is_none() {
+                            first = match first {
+                                Some(node) => {
+                                    // Matching key in node
+                                    // Then matched return value
+                                    if node.matched(key) {
+                                        return true;
+                                    } else {
+                                        // Next node
+                                        &node.next
+                                    }
+                                },
+                                None => &None
+                            }
+                        }
+                        false
+                    },
+                    None => {
+                        return false;
+                    }
+                }
+            },
+            Err(e) =>{
+                return false;
+            }
+        }
+    }
+
+    fn update(&mut self,key : &Vec<u8>,new_key : &Vec<u8>) -> Result<bool,&'static str> {
+        let _deleted = self.delete(key);
+        let add = self.add(new_key);
+        add
+    }
+
+    fn delete(&mut self,key : &Vec<u8>) -> Result<Option<Vec<u8>>,&'static str> {
         // Calculate hash function and return index of tables
         match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
@@ -264,7 +279,7 @@ where T : Clone + std::fmt::Debug
 
                                     // Matching key in node
                                     if node.matched(key) {
-                                        let value = node.get_value();
+                                        let value = node.get_key();
 
                                         // If take first node and no more in list
                                         if node.next.is_none() {
@@ -273,8 +288,8 @@ where T : Clone + std::fmt::Debug
 
                                             // Auto resize table
                                             match self.resize() {
-                                                Ok(_) => return Ok(value),
-                                                Err(_) => return Ok(value)
+                                                Ok(_) => return Ok(Some(value)),
+                                                Err(_) => return Ok(Some(value))
                                             };
                                         }
 
@@ -292,8 +307,8 @@ where T : Clone + std::fmt::Debug
 
                                                 // Auto resize table
                                                 match self.resize() {
-                                                    Ok(_) => return Ok(value),
-                                                    Err(_) => return Ok(value)
+                                                    Ok(_) => return Ok(Some(value)),
+                                                    Err(_) => return Ok(Some(value))
                                                 };
                                             },
                                             None => {
@@ -318,42 +333,10 @@ where T : Clone + std::fmt::Debug
         }
     }
 
-    #[inline]
-    fn update(&mut self,key : &Vec<u8>,value : T) -> Result<bool,&'static str> {
-        match hash(key, self.get_table_size(), self.get_seed()) {
-            Ok(index) => {
-                match self.nodes.get_mut(index) {
-                    Some(first_node) => {
-
-                        let mut first = first_node.as_mut();
-
-                        while !first.is_none() {
-                            first = match first {
-                                Some(node) => {
-                                    // Matching key in node
-                                    // Then matched return message already updated
-                                    if node.matched(key) {
-                                        node.set_value(value);
-                                        return Ok(true);
-                                    }
-
-                                    // Next node
-                                    node.next.as_mut().map(|node| &mut *node)
-                                },
-                                None => None
-                            }
-                        }
-
-                        Err("Not found node matched key!.")
-                    },
-                    None => Err("Not found node") 
-                }
-            },
-            Err(e) => Err(e) 
-        }
+    fn length(&self) -> usize {
+        self.size
     }
 
-    #[inline]
     fn clear(&mut self) -> Result<bool,&'static str> {
         for index in 0..self.nodes.len() {
             match self.nodes.get_mut(index) {
@@ -370,4 +353,5 @@ where T : Clone + std::fmt::Debug
         self.size = 0;
         Ok(true)
     }
+
 }

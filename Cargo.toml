@@ -31,6 +31,10 @@ name = "sdict_benchmark"
 harness = false
 
 [[bench]]
+name = "sset_benchmark"
+harness = false
+
+[[bench]]
 name = "hashmap_benchmark"
 harness = false
 
