@@ -85,24 +85,36 @@ cargo bench --bench vec_benchmark
 Report benchmark
 
 ```sh
+    Finished bench [optimized] target(s) in 15.84s
      Running benches/sdict_benchmark.rs (target/release/deps/sdict_benchmark-5e6c98c21226ae3f)
 Gnuplot not found, using plotters backend
-Set value to sdict      time:   [81.240 ns 81.773 ns 82.436 ns]
-                        change: [+0.0933% +1.3391% +2.6690%] (p = 0.04 < 0.05)
-                        Change within noise threshold.
+Set value to sdict      time:   [11.693 ns 11.780 ns 11.869 ns]
+                        change: [-4.1864% -3.1820% -2.2108%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+
 Get value from sdict by key
-                        time:   [35.934 ns 36.116 ns 36.310 ns]
-                        change: [-1.3300% +0.2011% +1.5002%] (p = 0.81 > 0.05)
-                        No change in performance detected.
+                        time:   [9.9544 ns 10.001 ns 10.052 ns]
+                        change: [-4.3150% -2.8085% -1.6914%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 7 outliers among 100 measurements (7.00%)
+  5 (5.00%) high mild
+  2 (2.00%) high severe
+
 Update value to sdict by key
-                        time:   [27.953 ns 28.103 ns 28.304 ns]
-                        change: [+0.1881% +0.8586% +1.5229%] (p = 0.01 < 0.05)
-                        Change within noise threshold.
+                        time:   [10.279 ns 10.325 ns 10.372 ns]
+                        change: [-3.4471% -2.2999% -1.1845%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 8 outliers among 100 measurements (8.00%)
+  1 (1.00%) low severe
+  1 (1.00%) low mild
+  4 (4.00%) high mild
+  2 (2.00%) high severe
 ```
 
 ## Incomming
 
-- IDict : The dictionary support key is integer
 - ISet  : The hashset support key is integer
 - Optimized all data structor
 
