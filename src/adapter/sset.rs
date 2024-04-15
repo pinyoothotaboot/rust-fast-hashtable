@@ -258,40 +258,12 @@ where T : Clone + std::fmt::Debug
     }
 
     fn update(&mut self,key : &Vec<u8>,new_key : &Vec<u8>) -> Result<bool,&'static str> {
-        match hash(key, self.get_table_size(), self.get_seed()) {
-            Ok(index) => {
-                match self.nodes.get_mut(index) {
-                    Some(first_node) => {
-
-                        let mut first = first_node.as_mut();
-
-                        while !first.is_none() {
-                            first = match first {
-                                Some(node) => {
-                                    // Matching key in node
-                                    // Then matched return message already updated
-                                    if node.matched(key) {
-                                        node.set_key(new_key.clone());
-                                        return Ok(true);
-                                    }
-
-                                    // Next node
-                                    node.next.as_mut().map(|node| &mut *node)
-                                },
-                                None => None
-                            }
-                        }
-
-                        Err("Not found node matched key!.")
-                    },
-                    None => Err("Not found node") 
-                }
-            },
-            Err(e) => Err(e) 
-        }
+        let _deleted = self.delete(key);
+        let add = self.add(new_key);
+        add
     }
 
-    fn delete(&mut self,key : &Vec<u8>) -> Result<Option<T>,&'static str> {
+    fn delete(&mut self,key : &Vec<u8>) -> Result<Option<Vec<u8>>,&'static str> {
         // Calculate hash function and return index of tables
         match hash(key, self.get_table_size(), self.get_seed()) {
             Ok(index) => {
@@ -307,7 +279,7 @@ where T : Clone + std::fmt::Debug
 
                                     // Matching key in node
                                     if node.matched(key) {
-                                        let value = node.get_value();
+                                        let value = node.get_key();
 
                                         // If take first node and no more in list
                                         if node.next.is_none() {
@@ -316,8 +288,8 @@ where T : Clone + std::fmt::Debug
 
                                             // Auto resize table
                                             match self.resize() {
-                                                Ok(_) => return Ok(value),
-                                                Err(_) => return Ok(value)
+                                                Ok(_) => return Ok(Some(value)),
+                                                Err(_) => return Ok(Some(value))
                                             };
                                         }
 
@@ -335,8 +307,8 @@ where T : Clone + std::fmt::Debug
 
                                                 // Auto resize table
                                                 match self.resize() {
-                                                    Ok(_) => return Ok(value),
-                                                    Err(_) => return Ok(value)
+                                                    Ok(_) => return Ok(Some(value)),
+                                                    Err(_) => return Ok(Some(value))
                                                 };
                                             },
                                             None => {

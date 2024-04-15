@@ -141,7 +141,7 @@ pub trait Set<T> {
      *      - Ok : Value from object after deleted
      *      - Err : The message error if has problem delete
      */
-    fn delete(&mut self,key : &Vec<u8>) -> Result<Option<T>,&'static str>;
+    fn delete(&mut self,key : &Vec<u8>) -> Result<Option<Vec<u8>>,&'static str>;
 
     /**
      * Function : clear
