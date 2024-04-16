@@ -9,7 +9,7 @@ This project created for optimized data structor for Dictionary and Set.The targ
 
 - SDict -> Support use hashtable by key is string ( range 2 to 11 charactor limit )
 - IDict -> Support use hashtable by key is integer
-- SSet  -> Support use hashset by key is string
+- SSet  -> Support use hashset by key is string ( range 2 to 11 charactor limit )
 - ISet  -> Support use hashset by key is integer
 
 ## Installation
@@ -62,9 +62,9 @@ cargo build --release
 
 ```rs
 let mut dict : SDict<String>  = SDict::<String>::new();
-let key = String::from("Hello");
+let key = String::from("Hello").as_bytes().to_vec();
 let value = String::from("World");
-let do_set = dict.set(key.clone(), value.clone());
+let do_set = dict.set(&key, value);
 println!("SET : {:?}",do_set);
 ```
 
@@ -79,7 +79,7 @@ cargo bench
 Run benchmark specify
 
 ```sh
-cargo bench --bench vec_benchmark
+cargo bench --bench sdict_benchmark
 ```
 
 Report benchmark
@@ -115,7 +115,7 @@ Found 8 outliers among 100 measurements (8.00%)
 
 ## Incomming
 
-- Optimized all data structor
+- Optimized all data structure
 
 ## License
 
