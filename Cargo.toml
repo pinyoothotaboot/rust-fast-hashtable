@@ -2,7 +2,7 @@
 name = "dict"
 version = "0.1.0"
 edition = "2021"
-repository = "https://github.com/pinyoothotaboot/dictionary.git"
+repository = "https://github.com/pinyoothotaboot/rust-fast-hashtable.git"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [profile.dev]
